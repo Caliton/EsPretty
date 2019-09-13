@@ -1,0 +1,35 @@
+name: espresso_app
+description: A new Flutter project.
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_launcher_icons: ^0.7.3
+  sqfentity: ^0.2.7
+  http: ^0.12.0+2
+  image_picker: ^0.6.1+4
+  cupertino_icons: ^0.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/photo-camera.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+   - assets/photo-camera.png
+   - assets/perfil1.png
+   - assets/picture.png
+   - assets/teste_image.jpeg
+   - assets/bottom.jpg
