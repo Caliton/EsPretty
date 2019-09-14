@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:espresso_app/class/invoice.dart';
+import 'package:espresso_app/components/box-znt-widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 var cores = [
@@ -17,122 +16,92 @@ var cores = [
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
   _HomeState createState() => _HomeState();
-  
 }
 
-
 class _HomeState extends State<Home> {
-  List listInvoices = [];
+  List listInvoices;
   bool _pinned = true;
   bool _snap = false;
   bool _floating = false;
-  var data = [
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/677/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    },
-    {
-      "title": "Titulo da Imagem",
-      "content": "Descrição da imagem",
-      "color": cores[new Random().nextInt(5)],
-      "image": "https://picsum.photos/id/428/200/200"
-    }
-  ];
 
-  _getImage () {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => ImagePickerExample()));
+  // _getImage() {
+  //   Navigator.push(
+  //       context, MaterialPageRoute(builder: (context) => ImagePickerExample()));
+  // }
+
+  @override
+  initState() {
+    super.initState();
+    Future<List>.sync(_listInvoice).then((List asdf) {
+      setState(() {
+        print("MAMAMAMAMAMMAMAMAMAMA");
+        print(asdf);
+        listInvoices = asdf;
+        print(listInvoices);
+      });
+    });
   }
 
-  Future<Null> _listInvoice() async {
+  Future<List> _listInvoice() async {
+    List eitaPorra = [];
     final invoiceList = await Invoice().select().toList();
-    listInvoices = [];
-    for(int i = 0; i < invoiceList.length; i++) {
-      invoiceList[i].toMap();
-      this.listInvoices.addAll(invoiceList);
-      print(invoiceList[i].id);
-      print(invoiceList.toList());
+    for (int i = 0; i < invoiceList.length; i++) {
+      eitaPorra.add(invoiceList[i].toMap());
     }
-    print('Eita porrao: ');
-    print(this.listInvoices[0].toMap());
+    return eitaPorra;
   }
+
+  Future<Null> _deleteInvoice() async {
+    await Invoice().select().delete();
+    listInvoices = [];
+    setState(() {
+      _listInvoice();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    _listInvoice();
+    Future<List>.sync(_listInvoice).then((List asdf) {
+      print(asdf);
+      listInvoices = asdf;
+      print(listInvoices);
+    });
     return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
             actions: <Widget>[
-                      ButtonBar(
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.update),
-              onPressed: _listInvoice,
-              tooltip: 'Shoot picture',
-            ),
-            IconButton(
-              icon: Icon(Icons.photo_camera),
-              onPressed: _getImage,
-              tooltip: 'Shoot picture',
-            ),
-          ],
-        ),
+              ButtonBar(
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.update),
+                    onPressed: () {
+                      setState(() {
+                        _listInvoice();
+                      });
+                    },
+                    tooltip: 'Atualizar Lista',
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: _deleteInvoice,
+                    tooltip: 'Deletar todos',
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add_photo_alternate),
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) => BoxZnt(
+                              title: Text('Registrar Nota'),
+                              icon: Icon(Icons.local_atm),
+                              body: SingleChildScrollView(
+                                  child: ImagePickerExample())));
+                    },
+                    tooltip: 'Captura uma foto',
+                  ),
+                ],
+              ),
             ],
             automaticallyImplyLeading: false,
             shape: RoundedRectangleBorder(
@@ -144,7 +113,7 @@ class _HomeState extends State<Home> {
             expandedHeight: 160.0,
             flexibleSpace: FlexibleSpaceBar(
                 title: Transform.translate(
-                  offset:/*false ? Offset(-50.0, 0.0) : */Offset(-40.0, 25.0),
+                  offset: /*false ? Offset(-50.0, 0.0) : */ Offset(-40.0, 25.0),
                   child: ListTile(
                     leading: CircleAvatar(
                       child: Container(
@@ -188,27 +157,83 @@ class _HomeState extends State<Home> {
                       fit: BoxFit.cover),
                 )),
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext content, int index) {
-                return Container(
-                    decoration: BoxDecoration(color: Colors.white),
-                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    child: AwesomeListItem(
-                        id: listInvoices[index].id,
-                        title: listInvoices[index].description,
-                        content: listInvoices[index].status,
-                        color: cores[new Random().nextInt(5)],
-                        image: listInvoices[index].path
-                    )
-                );
-              },
-              childCount: listInvoices.length,
-            ),
-          ),
+          listInvoices.length > 3
+              ? SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext content, int index) {
+                      return Container(
+                          decoration: BoxDecoration(color: Colors.white),
+                          margin: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                          child: AwesomeListItem(
+                              id: listInvoices[index]["id"],
+                              title: listInvoices[index]["description"],
+                              content: listInvoices[index]["status"],
+                              color: cores[new Random().nextInt(5)],
+                              image: listInvoices[index]["path"]));
+                    },
+                    childCount: listInvoices.length,
+                  ),
+                )
+              : SliverFillRemaining(
+                  child: Container(
+                      child: listInvoices.length == 0
+                          ? Center(
+                              // margin: EdgeInsets.symmetric(horizontal: 20),
+                              child: emptyState(
+                                  title: 'Oppss!',
+                                  message:
+                                      "Não temos nenhuma nota registrada :)"),
+                            )
+                          : Center(
+                              child: ListView.builder(
+                                itemCount: listInvoices.length,
+                                itemBuilder: (BuildContext content, int index) {
+                                  return Container(
+                                      decoration:
+                                          BoxDecoration(color: Colors.white),
+                                      margin: EdgeInsets.symmetric(
+                                          vertical: 10, horizontal: 15),
+                                      child: AwesomeListItem(
+                                          id: listInvoices[index]["id"],
+                                          title: listInvoices[index]
+                                              ["description"],
+                                          content: listInvoices[index]
+                                              ["status"],
+                                          color: cores[new Random().nextInt(5)],
+                                          image: listInvoices[index]["path"]));
+                                },
+                              ),
+                            )),
+                ),
         ],
       ),
       backgroundColor: Colors.greenAccent,
+    );
+  }
+
+  Widget emptyState({
+    title: '',
+    message: '',
+  }) {
+    return Material(
+      borderRadius: BorderRadius.circular(16),
+      elevation: 16,
+      color: Theme.of(context).cardColor.withOpacity(.95),
+      shadowColor: Theme.of(context).accentColor.withOpacity(.5),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(title, style: Theme.of(context).textTheme.headline),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(message),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
@@ -326,7 +351,6 @@ class _AwesomeListItemState extends State<AwesomeListItem> {
   }
 }
 
-
 class ImagePickerExample extends StatefulWidget {
   const ImagePickerExample({Key key}) : super(key: key);
 
@@ -335,106 +359,150 @@ class ImagePickerExample extends StatefulWidget {
 }
 
 class _ImagePickerExampleState extends State<ImagePickerExample> {
+  final _formKey = GlobalKey<FormState>();
+  final _invoice = Invoice();
   File _imageFile;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: 
-        ListView(
-      children: <Widget>[
-        ButtonBar(
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.photo_camera),
-              onPressed: () async => await _pickImageFromCamera(),
-              tooltip: 'Shoot picture',
+    return Container(
+      child: Wrap(
+        children: <Widget>[
+          this._imageFile == null
+              ? Card(
+                  color: Colors.green[200],
+                  margin: EdgeInsets.all(20.0),
+                  elevation: 0,
+                  child: Container(
+                    height: 100.0,
+                    child: InkWell(
+                      splashColor: Colors.cyan,
+                      onTap: () async => await _pickImageFromCamera(),
+                      child: Center(
+                        child: Image.asset("assets/photo-camera.png"),
+                      ),
+                    ),
+                  ),
+                )
+              : Card(
+                  color: Colors.green[200],
+                  margin: EdgeInsets.all(20.0),
+                  elevation: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    height: 200,
+                    child: InkWell(
+                      onTap: () async => await _pickImageFromCamera(),
+                      child: Center(
+                        child: Image.file(
+                          this._imageFile,
+                          fit: BoxFit.fill,
+                          height: 200,
+                          width: 250,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
+            child: Builder(
+              builder: (context) => Form(
+                key: _formKey,
+                child: Wrap(
+                  spacing: 20,
+                  runSpacing: 20,
+                  children: <Widget>[
+                    fieldZnt(
+                      fieldName: 'Descrição',
+                      textSize: 15,
+                      icon: Icons.local_play,
+                      inputType: TextInputType.text,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Preencha ai fera!';
+                        }
+                        _invoice.description = value.toString();
+                        return null;
+                      },
+                    ),
+                    fieldZnt(
+                      fieldName: 'Value',
+                      textSize: 15,
+                      icon: Icons.attach_money,
+                      inputType: TextInputType.text,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Preencha ai fera!';
+                        }
+                        _invoice.status = value.toString();
+                        return null;
+                      },
+                    ),
+                    Container (
+                      child: RaisedButton(
+                        color: Color(0xFF1DCC8C),
+                        textColor: Colors.white,
+                        onPressed: () async {
+                          if (_formKey.currentState.validate()) {
+                            _invoice.path = this._imageFile.path;
+                            await _invoice.save();
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: Text('Salvar'),
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ),
-            IconButton(
-              icon: Icon(Icons.photo),
-              onPressed: () async => await _pickImageFromGallery(),
-              tooltip: 'Pick from gallery',
-            ),
-          ],
-        ),
-        this._imageFile == null ? Placeholder() : Image.file(this._imageFile),
-        TextField(
-          
-        )
-      ],
+          )
+        ],
       ),
     );
-  }
-
-  Future<Null> _pickImageFromGallery() async {
-    final File imageFile =
-        await ImagePicker.pickImage(source: ImageSource.gallery);
-    setState(() => this._imageFile = imageFile);
-  }
-
-  Future<Null> _pickImageFromCamera() async {
-    final invoice = Invoice();
-    invoice.description = "Nota Fiscal 1";
-    invoice.status = 'R\$ 50,00';
-    final File imageFile =
-        await ImagePicker.pickImage(source: ImageSource.camera);
-        print('Caraiadade Foto');
-        print(this._imageFile);
-
-    setState(() {
-      this._imageFile = imageFile;
-      invoice.path = this._imageFile.path;
-      print('Olha a fottoooo aiiii gente!!!! ');
-      print(this._imageFile);
-      print('Vish olha a notinha ai gente!!!!');
-      print(invoice);
-      return this._imageFile;
-    });
-    invoice.path = this._imageFile.path;
-    await invoice.save();
   }
 
   Widget fieldZnt(
       {String fieldName = 'Campo: ',
       double widthCustom,
-      double textSize = 20,
+      double textSize = 15,
       IconData icon,
       TextInputType inputType,
       Function funcao,
-      List<TextInputFormatter> inputFormatters}) {
+      Function validator}) {
     return Container(
       width: widthCustom,
       child: TextFormField(
-        inputFormatters: inputFormatters,
         onChanged: funcao,
         keyboardType: inputType,
-        validator: (value) {
-          if (value.isEmpty) {
-            return 'Preenche os Campos!';
-          }
-          return null;
-        },
+        validator: validator,
         textCapitalization: TextCapitalization.words,
-        textAlign: TextAlign.center,
         style: TextStyle(fontSize: textSize),
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.white38,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30))),
+          fillColor: Color(0xFFF1F1F1),
+          // border: OutlineInputBorder(
+          //     borderRadius: BorderRadius.all(Radius.circular(30))),
           prefixIcon: Icon(
             icon,
             size: 30,
           ),
-          hoverColor: Colors.brown,
-          hintText: 'Titulo',
           labelText: fieldName,
         ),
         onSaved: (String value) {
-          print('PORRADA');
           debugPrint(value);
         },
       ),
     );
+  }
+
+  Future<Null> _pickImageFromCamera() async {
+    final File imageFile =
+        await ImagePicker.pickImage(source: ImageSource.camera);
+    setState(() {
+      this._imageFile = imageFile;
+      return this._imageFile;
+    });
   }
 }
