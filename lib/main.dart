@@ -5,7 +5,6 @@ import 'package:espresso_app/config/config-database.dart';
 
 String _modelString;
 String get modelString => _modelString;
-
 set modelString(String modelStrings) {
   _modelString = modelStrings;
 }
@@ -13,6 +12,7 @@ set modelString(String modelStrings) {
 void main() async { 
   WidgetsFlutterBinding.ensureInitialized();
   final String sqfEntityModelString = 'banco atualizado';
+  
   // final bool isInitialized = true;
   // Atualizar o banco só vim aki e descomentar e comentar o de cima....
   // final String sqfEntityModelString = MyDbModel().createModel();

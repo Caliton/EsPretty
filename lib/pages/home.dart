@@ -1,9 +1,13 @@
 import 'dart:io';
+import 'package:path/path.dart' show join;
 import 'dart:math';
+import 'package:camera/camera.dart';
 import 'package:espresso_app/class/invoice.dart';
 import 'package:espresso_app/components/box-znt-widget.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 var cores = [
   Color(0xFFFD5C6F), // #FD5C6F
@@ -20,24 +24,17 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List listInvoices;
+
   bool _pinned = true;
   bool _snap = false;
   bool _floating = false;
-
-  // _getImage() {
-  //   Navigator.push(
-  //       context, MaterialPageRoute(builder: (context) => ImagePickerExample()));
-  // }
 
   @override
   initState() {
     super.initState();
     Future<List>.sync(_listInvoice).then((List asdf) {
       setState(() {
-        print("MAMAMAMAMAMMAMAMAMAMA");
-        print(asdf);
         listInvoices = asdf;
-        print(listInvoices);
       });
     });
   }
@@ -48,6 +45,8 @@ class _HomeState extends State<Home> {
     for (int i = 0; i < invoiceList.length; i++) {
       eitaPorra.add(invoiceList[i].toMap());
     }
+    print('Modelo: ');
+    print(eitaPorra);
     return eitaPorra;
   }
 
@@ -141,7 +140,7 @@ class _HomeState extends State<Home> {
                           ]),
                     ),
                     subtitle: Text(
-                      "Developer Full Stack",
+                      "Full Stack Developer",
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 10.0,
@@ -196,10 +195,9 @@ class _HomeState extends State<Home> {
                                           vertical: 10, horizontal: 15),
                                       child: AwesomeListItem(
                                           id: listInvoices[index]["id"],
-                                          title: listInvoices[index]
-                                              ["description"],
+                                          title: listInvoices[index]["status"],
                                           content: listInvoices[index]
-                                              ["status"],
+                                              ["description"],
                                           color: cores[new Random().nextInt(5)],
                                           image: listInvoices[index]["path"]));
                                 },
@@ -265,7 +263,7 @@ class _AwesomeListItemState extends State<AwesomeListItem> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  widget.title,
+                  'R\$ ' + widget.title,
                   style: TextStyle(
                       color: Colors.grey.shade800,
                       fontSize: 18.0,
@@ -310,14 +308,13 @@ class _AwesomeListItemState extends State<AwesomeListItem> {
                           height: 120.0,
                           width: 120.0,
                           decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(
-                                  width: 10.0,
-                                  color: Colors.white,
-                                  style: BorderStyle.solid),
-                              image: DecorationImage(
-                                image: AssetImage(widget.image),
-                              )),
+                            color: Colors.white,
+                            border: Border.all(
+                                width: 10.0,
+                                color: Colors.white,
+                                style: BorderStyle.solid),
+                          ),
+                          child: Image.file(File(widget.image)),
                         ),
                       ),
                       onTap: () => _showSecondPage(context, widget),
@@ -341,6 +338,7 @@ class _AwesomeListItemState extends State<AwesomeListItem> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
+                          Image.file(File(objeto.image)),
                           Image.asset(objeto.image),
                           Text(objeto.title)
                         ],
@@ -363,6 +361,16 @@ class _ImagePickerExampleState extends State<ImagePickerExample> {
   final _invoice = Invoice();
   File _imageFile;
 
+  _dashboard() async {
+    print('Buhhh');
+    final image = await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => CameraApp()));
+    print('PUTA KI PARIUUUU NENEMMM');
+    _imageFile = File(image);
+    print(_imageFile);
+    // Navigator.push(context, MaterialPageRoute(builder: (context) => MyHomePage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -377,7 +385,7 @@ class _ImagePickerExampleState extends State<ImagePickerExample> {
                     height: 100.0,
                     child: InkWell(
                       splashColor: Colors.cyan,
-                      onTap: () async => await _pickImageFromCamera(),
+                      onTap: () async => await _dashboard(),
                       child: Center(
                         child: Image.asset("assets/photo-camera.png"),
                       ),
@@ -430,7 +438,7 @@ class _ImagePickerExampleState extends State<ImagePickerExample> {
                       fieldName: 'Value',
                       textSize: 15,
                       icon: Icons.attach_money,
-                      inputType: TextInputType.text,
+                      inputType: TextInputType.number,
                       validator: (value) {
                         if (value.isEmpty) {
                           return 'Preencha ai fera!';
@@ -439,7 +447,7 @@ class _ImagePickerExampleState extends State<ImagePickerExample> {
                         return null;
                       },
                     ),
-                    Container (
+                    Container(
                       child: RaisedButton(
                         color: Color(0xFF1DCC8C),
                         textColor: Colors.white,
@@ -497,12 +505,127 @@ class _ImagePickerExampleState extends State<ImagePickerExample> {
     );
   }
 
-  Future<Null> _pickImageFromCamera() async {
-    final File imageFile =
-        await ImagePicker.pickImage(source: ImageSource.camera);
+  Future _pickImageFromCamera() async {
+    // await ImagePicker.pickImage(source: ImageSource.camera);
+    final imageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
+
     setState(() {
-      this._imageFile = imageFile;
-      return this._imageFile;
+      _imageFile = imageFile;
     });
+  }
+}
+
+class CameraApp extends StatefulWidget {
+  @override
+  _CameraAppState createState() => _CameraAppState();
+}
+
+class _CameraAppState extends State<CameraApp> {
+  List<CameraDescription> cameras;
+  // Future _vish(imagePath) async {
+  //   final FirebaseVisionImage visionImage =
+  //       FirebaseVisionImage.fromFile(File(imagePath));
+  //   final VisionText visionText =
+  //       await textRecognizer.detectInImage(visionImage);
+  //   return visionText;
+  // }
+
+  CameraController controller;
+
+  Future<List<CameraDescription>> _listCamera() async {
+    final camera = await availableCameras();
+    return camera;
+  }
+
+  @override
+  initState() {
+    super.initState();
+    Future.sync(_listCamera).then((List<CameraDescription> camera) {
+      setState(() {
+        cameras = camera;
+
+        controller = CameraController(cameras[0], ResolutionPreset.medium);
+        controller.initialize().then((_) {
+          if (!mounted) {
+            return;
+          }
+        });
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!controller.value.isInitialized) {
+      return Container();
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Fotinha'),
+      ),
+      body: AspectRatio(
+          aspectRatio: controller.value.aspectRatio,
+          child: CameraPreview(controller)),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.camera_alt),
+        onPressed: () async {
+          try {
+            final path = join(
+              (await getApplicationDocumentsDirectory()).path,
+              'photo-${DateTime.now()}.png',
+            );
+            await controller.takePicture(path);
+
+            final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
+            final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFile(File(path));
+            final VisionText visionText = await textRecognizer.detectInImage(visionImage);
+
+            print('AAAAAAAAAAAAAAAAAAAAAAAROOOOZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ');
+            String text = visionText.text;
+            print('Text: ');
+            print(text);
+            
+            for (TextBlock block in visionText.blocks) {
+              final Rectangle<int> boundingBox = block.boundingBox;
+              final List<Point<int>> cornerPoints = block.cornerPoints;
+              final String text = block.text;
+              final List<RecognizedLanguage> languages =
+                  block.recognizedLanguages;
+
+              print('Text: ');
+              print(text);
+              print('Rectangle: ');
+              print(boundingBox);
+              print('CornerPoints: ');
+              print(cornerPoints);
+              print('Languages: ');
+              print(languages);
+
+              print('Vô: ');
+              for (TextLine line in block.lines) {
+                print('Pai: ');
+                print(line);
+                for (TextElement element in line.elements) {
+                  print('Filho: ');                  // Same getters as TextBlock
+                  print(element);
+                }
+              }
+            }
+
+            Navigator.pop(context, path);
+          } catch (e) {
+            print(
+                "================================================================================================");
+            print(e);
+          }
+        },
+      ),
+    );
   }
 }
