@@ -3,7 +3,6 @@ import 'package:espresso_app/class/invoice.dart';
 import 'package:espresso_app/widgets/camera_invoice.dart';
 import 'package:flutter/material.dart';
 
-
 class InvoiceForms extends StatefulWidget {
   const InvoiceForms({Key key}) : super(key: key);
 
@@ -87,29 +86,30 @@ class _InvoiceForms extends State<InvoiceForms> {
                         if (value.isEmpty) {
                           return 'Preencha ai fera!';
                         }
+                        _invoice.status = this._discorveryText;
                         _invoice.description = value.toString();
                         return null;
                       },
                     ),
-                    fieldZnt(
-                      fieldName: 'O que pode estar escrito?',
-                      textSize: 15,
-                      controller: txtModel,
-                      maxLines: null,
-                      icon: Icons.remove_red_eye,
-                      inputType: TextInputType.text,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Preencha ai fera!';
-                        }
-                        if (this._discorveryText != null) {
-                          _invoice.status = this._discorveryText;
-                        } else {
-                          _invoice.status = value.toString();
-                        }
-                        return null;
-                      },
-                    ),
+                    // fieldZnt(
+                    //   fieldName: 'O que pode estar escrito?',
+                    //   textSize: 15,
+                    //   controller: txtModel,
+                    //   maxLines: null,
+                    //   icon: Icons.remove_red_eye,
+                    //   inputType: TextInputType.text,
+                    //   validator: (value) {
+                    //     if (value.isEmpty) {
+                    //       return 'Preencha ai fera!';
+                    //     }
+                    //     if (this._discorveryText != null) {
+                    //       _invoice.status = this._discorveryText;
+                    //     } else {
+                    //       _invoice.status = value.toString();
+                    //     }
+                    //     return null;
+                    //   },
+                    // ),
                     Container(
                       child: RaisedButton(
                         color: Color(0xFF1DCC8C),
@@ -123,7 +123,20 @@ class _InvoiceForms extends State<InvoiceForms> {
                         },
                         child: Text('Salvar'),
                       ),
-                    )
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 30),
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "Experimente fotografar algo\n que contenha um texto ; )",
+                        style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
               ),

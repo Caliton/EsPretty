@@ -1,14 +1,9 @@
 import 'dart:io';
-import 'package:espresso_app/widgets/form_invoice.dart';
 import 'package:path/path.dart' show join;
-import 'dart:math';
 import 'package:camera/camera.dart';
-import 'package:espresso_app/class/invoice.dart';
-import 'package:espresso_app/components/box_widget.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-
 
 class CameraApp extends StatefulWidget {
   @override
@@ -17,7 +12,6 @@ class CameraApp extends StatefulWidget {
 
 class _CameraAppState extends State<CameraApp> {
   List<CameraDescription> cameras;
-  String conjuntoDescoberta;
 
   CameraController controller;
 
@@ -32,7 +26,6 @@ class _CameraAppState extends State<CameraApp> {
     Future.sync(_listCamera).then((List<CameraDescription> camera) {
       setState(() {
         cameras = camera;
-
         controller = CameraController(cameras[0], ResolutionPreset.medium);
         controller.initialize().then((_) {
           if (!mounted) {
@@ -52,7 +45,14 @@ class _CameraAppState extends State<CameraApp> {
   @override
   Widget build(BuildContext context) {
     if (!controller.value.isInitialized) {
-      return Container();
+      return Scaffold(
+        body: Container(
+          child: Center(
+            child: Text(
+                'Vish! A Camera ainda não conseguiu se carregar!\n Volte e tente mais uma vez.'),
+          ),
+        ),
+      );
     }
     return Scaffold(
       appBar: AppBar(
@@ -68,6 +68,7 @@ class _CameraAppState extends State<CameraApp> {
         ),
         onPressed: () async {
           try {
+            String text = '';
             final imagePath = join(
               (await getApplicationDocumentsDirectory()).path,
               'photo-${DateTime.now()}.png',
@@ -80,8 +81,7 @@ class _CameraAppState extends State<CameraApp> {
                 FirebaseVisionImage.fromFile(File(imagePath));
             final VisionText visionText =
                 await textRecognizer.detectInImage(visionImage);
-
-            String text = visionText.text;
+            text = visionText.text;
 
             Navigator.pop(context, [imagePath, text]);
           } catch (e) {

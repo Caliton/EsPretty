@@ -1,14 +1,10 @@
-import 'dart:io';
 import 'package:espresso_app/widgets/form_invoice.dart';
 import 'package:espresso_app/widgets/item_invoice.dart';
-import 'package:path/path.dart' show join;
 import 'dart:math';
-import 'package:camera/camera.dart';
 import 'package:espresso_app/class/invoice.dart';
 import 'package:espresso_app/components/box_widget.dart';
-import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+
 
 var cores = [
   Color(0xFFFD5C6F), // #FD5C6F
