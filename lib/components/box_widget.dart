@@ -32,7 +32,7 @@ class _BoxZntState extends State<BoxZnt> {
                   IconButton(
                     icon: Icon(Icons.close),
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pop(context, setState((){}));
                     },
                   )
                 ],
