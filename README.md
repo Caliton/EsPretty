@@ -1,4 +1,4 @@
-# espresso_app
+# EsPretty
 
 Construido com Flutter <3
 
